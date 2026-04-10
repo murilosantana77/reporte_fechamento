@@ -7,18 +7,27 @@ import sys
 import json
 import os
 
+# =====================================================================
+# FORÇAR FUSO HORÁRIO DE BRASÍLIA NO VERCEL
+# =====================================================================
+os.environ['TZ'] = 'America/Sao_Paulo'
+try:
+    time.tzset() # Aplica o fuso horário no ambiente Linux/Vercel
+except AttributeError:
+    pass # Ignora se rodar localmente no Windows (que não suporta tzset)
+
 def main():
     options = webdriver.ChromeOptions()
     
     # =====================================================================
-    # AS MUDANÇAS ESTÃO AQUI: Configurações anti-bloqueio e novo motor Headless
+    # Configurações anti-bloqueio e novo motor Headless
     # =====================================================================
-    options.add_argument('--headless=new') # Usa o novo motor de renderização (idêntico ao Chrome real)
+    options.add_argument('--headless=new') 
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--window-size=1920,1080')
-    options.add_argument('--disable-blink-features=AutomationControlled') # Esconde que é o Selenium
-    options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36') # Finge ser um PC normal
+    options.add_argument('--disable-blink-features=AutomationControlled') 
+    options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36') 
     
     driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 20) 
@@ -29,7 +38,7 @@ def main():
         driver.get("https://google.com")
         time.sleep(2)
 
-        print("Injetando cookies de sessão do GitHub Secrets...")
+        print("Injetando cookies de sessão...")
         cookies_str = os.environ.get("COOKIES_SESSAO")
         
         if cookies_str:
@@ -43,7 +52,7 @@ def main():
                     pass
             print("✅ Tentativa de injeção de cookies finalizada.")
         else:
-            print("⚠️ AVISO: O segredo COOKIES_SESSAO não foi encontrado ou está vazio!")
+            print("⚠️ AVISO: A variável COOKIES_SESSAO não foi encontrada ou está vazia!")
 
         # 2. ACESSAR O PAINEL DE DESENVOLVIMENTO
         print("Acessando o link do Google Apps Script...")
@@ -68,7 +77,6 @@ def main():
         except Exception as e:
             print("⚠️ Não achou iframe, vai tentar na página principal mesmo.")
         
-        # Mantemos o tempo alto para dar tempo do Apps Script rodar tudo no novo motor
         print("Aguardando 35 segundos para o dashboard puxar os KPIs da planilha e desenhar os gráficos...")
         time.sleep(35) 
 
