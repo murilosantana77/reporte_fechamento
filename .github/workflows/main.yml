@@ -27,11 +27,11 @@ jobs:
         pip install -r requirements.txt
 
     - name: Instalar Navegadores do Playwright
-      run: npx playwright install chromium --with-deps
+      run: python -m playwright install chromium --with-deps
 
     - name: Rodar o Script de Automação
       env:
-        # Puxa os segredos do GitHub para dentro do Python
+        # Garante que os segredos estão disponíveis para o seu script.py
         COOKIES_SESSAO: ${{ secrets.COOKIES_SESSAO }}
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       run: python script.py
