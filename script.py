@@ -21,7 +21,6 @@ def main():
     try:
         # 1. ACESSAR DOMÍNIO RAIZ E INJETAR COOKIES
         print("Acessando o domínio principal do Google para preparar a sessão...")
-        # Alterado para google.com, que é o domínio pai da maioria dos cookies de login
         driver.get("https://google.com")
         time.sleep(2)
 
@@ -31,11 +30,10 @@ def main():
         if cookies_str:
             cookies_list = json.loads(cookies_str)
             for cookie in cookies_list:
-                # O Selenium às vezes recusa cookies com o atributo 'sameSite', então removemos
                 if 'sameSite' in cookie:
                     del cookie['sameSite']
                 
-                # Tenta adicionar o cookie. Se o domínio não bater, ele simplesmente ignora e segue em frente
+                # Tenta adicionar o cookie. Ignora se o domínio for incompatível.
                 try:
                     driver.add_cookie(cookie)
                 except:
@@ -50,35 +48,48 @@ def main():
         url = "https://script.google.com/a/macros/shopee.com/s/AKfycby9ezG_TJrxTuCrEzXiIzs1Nc0ePz-TW-0JgfFXhrg/dev"
         driver.get(url)
         
-        # Aguarda um tempo maior aqui para garantir que a página logada carregue totalmente
+        print("Aguardando 10 segundos para a página carregar...")
         time.sleep(10) 
+
+        # 3. MERGULHAR NO IFRAME DO APPS SCRIPT
+        print("Procurando o iframe do painel...")
+        try:
+            # Encontra o primeiro iframe da página e entra nele
+            iframe_principal = wait.until(EC.presence_of_element_located((By.TAG_NAME, "iframe")))
+            driver.switch_to.frame(iframe_principal)
+            print("✅ Entrou no iframe principal.")
+            
+            # O Apps Script frequentemente coloca o conteúdo real em um segundo iframe interno
+            time.sleep(2)
+            iframes_internos = driver.find_elements(By.TAG_NAME, "iframe")
+            if len(iframes_internos) > 0:
+                driver.switch_to.frame(iframes_internos[0])
+                print("✅ Entrou no iframe interno do Apps Script.")
+        except Exception as e:
+            print("⚠️ Não achou iframe, vai tentar na página principal mesmo.")
         
-        # 3. TENTAR CLICAR EM "COPIAR"
+        # 4. TENTAR CLICAR EM "COPIAR"
         print("Procurando o botão 'Copiar'...")
         try:
-            btn_copiar = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[10]/div/div[1]/div[1]/div[5]/div[2]/div[3]/button[1]")))
-            btn_copiar.click()
-            print("✅ Botão 'Copiar' clicado via XPath.")
-        except:
-            print("⚠️ XPath do botão 'Copiar' falhou. Tentando localizar pela escrita...")
             btn_copiar = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'Copiar')]")))
             btn_copiar.click()
-            print("✅ Botão 'Copiar' clicado via texto.")
+            print("✅ Botão 'Copiar' clicado com sucesso.")
+        except:
+            print("⚠️ Falha ao clicar no Copiar.")
+            raise Exception("Botão Copiar não encontrado dentro do iframe.")
 
         print("Aguardando 10 segundos para a caixa do SeaTalk aparecer...")
         time.sleep(10)
 
-        # 4. TENTAR CLICAR EM "SEATALK"
+        # 5. TENTAR CLICAR EM "SEATALK"
         print("Procurando o botão 'SeaTalk'...")
         try:
-            btn_seatalk = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[10]/div/div[1]/div[1]/div[5]/div[2]/div[3]/button[2]")))
-            btn_seatalk.click()
-            print("✅ Botão 'SeaTalk' clicado via XPath.")
-        except:
-            print("⚠️ XPath do botão 'SeaTalk' falhou. Tentando localizar pela escrita...")
             btn_seatalk = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'SeaTalk')]")))
             btn_seatalk.click()
-            print("✅ Botão 'SeaTalk' clicado via texto.")
+            print("✅ Botão 'SeaTalk' clicado com sucesso.")
+        except:
+            print("⚠️ Falha ao clicar no SeaTalk.")
+            raise Exception("Botão SeaTalk não encontrado na tela.")
 
         print("Aguardando 5 segundos para envio da mensagem...")
         time.sleep(5)
