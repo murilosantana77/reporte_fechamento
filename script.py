@@ -7,6 +7,13 @@ import sys
 import json
 import os
 
+# =====================================================================
+# CONFIGURAÇÃO DE FUSO HORÁRIO (BRASÍLIA)
+# =====================================================================
+os.environ['TZ'] = 'America/Sao_Paulo'
+if hasattr(time, 'tzset'):
+    time.tzset()
+
 def main():
     options = webdriver.ChromeOptions()
     
