@@ -20,8 +20,9 @@ def main():
     
     try:
         # 1. ACESSAR DOMÍNIO RAIZ E INJETAR COOKIES
-        print("Acessando o domínio raiz para preparar a sessão...")
-        driver.get("https://script.google.com")
+        print("Acessando o domínio principal do Google para preparar a sessão...")
+        # Alterado para google.com, que é o domínio pai da maioria dos cookies de login
+        driver.get("https://google.com")
         time.sleep(2)
 
         print("Injetando cookies de sessão do GitHub Secrets...")
@@ -33,8 +34,14 @@ def main():
                 # O Selenium às vezes recusa cookies com o atributo 'sameSite', então removemos
                 if 'sameSite' in cookie:
                     del cookie['sameSite']
-                driver.add_cookie(cookie)
-            print("✅ Cookies injetados com sucesso.")
+                
+                # Tenta adicionar o cookie. Se o domínio não bater, ele simplesmente ignora e segue em frente
+                try:
+                    driver.add_cookie(cookie)
+                except:
+                    pass
+                    
+            print("✅ Tentativa de injeção de cookies finalizada.")
         else:
             print("⚠️ AVISO: O segredo COOKIES_SESSAO não foi encontrado ou está vazio!")
 
