@@ -1,5 +1,1 @@
-selenium
-playwright
-pandas
-gspread
-oauth2client
+selenium>=4.15.0
