@@ -62,14 +62,15 @@ def main():
         except Exception as e:
             print("⚠️ Não achou iframe, vai tentar na página principal mesmo.")
         
-        # Aguarda os dados do dashboard renderizarem
-        print("Aguardando 5 segundos para o dashboard interno carregar...")
-        time.sleep(5)
+        # =====================================================================
+        # A MUDANÇA ESTÁ AQUI: Tempo estendido para os gráficos renderizarem
+        # =====================================================================
+        print("Aguardando 35 segundos para o dashboard puxar os KPIs da planilha e desenhar os gráficos...")
+        time.sleep(35) 
 
         # 4. TENTAR CLICAR EM "COPIAR"
         print("Procurando o botão 'Copiar' pelo XPath exato...")
         try:
-            # Usando o XPath absoluto fornecido
             xpath_copiar = "/html/body/div[10]/div/div[1]/div[1]/div[5]/div[2]/div[3]/button[1]"
             btn_copiar = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_copiar)))
             
@@ -90,7 +91,6 @@ def main():
         # 5. TENTAR CLICAR EM "SEATALK"
         print("Procurando o botão 'SeaTalk' pelo XPath exato...")
         try:
-            # Usando o XPath absoluto fornecido
             xpath_seatalk = "/html/body/div[10]/div/div[1]/div[1]/div[5]/div[2]/div[3]/button[2]"
             btn_seatalk = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_seatalk)))
             
