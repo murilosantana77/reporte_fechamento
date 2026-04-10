@@ -9,11 +9,12 @@ import pandas as pd
 import json
 from oauth2client.service_account import ServiceAccountCredentials
 
+# Configuração de Fuso Horário
 os.environ['TZ'] = 'America/Sao_Paulo'
 try:
-    time.tzset() # Aplica o fuso horário no ambiente Linux/Vercel
+    time.tzset()
 except AttributeError:
-    pass # Ignora se rodar localmente no Windows
+    pass
 
 DOWNLOAD_DIR = "/tmp"
 
@@ -37,7 +38,6 @@ def update_packing_google_sheets(csv_file_path):
             print(f"Arquivo {csv_file_path} não encontrado.")
             return
         
-        # Lê a credencial do Google a partir do Secret do GitHub Action
         google_creds_json = os.environ.get('GOOGLE_CREDENTIALS')
         if not google_creds_json:
             print("Erro: Variável de ambiente GOOGLE_CREDENTIALS não encontrada.")
@@ -48,26 +48,33 @@ def update_packing_google_sheets(csv_file_path):
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         
         client = gspread.authorize(creds)
+        # URL da sua planilha de queue list
         sheet1 = client.open_by_url("https://docs.google.com/spreadsheets/d/1qvgVViwnLVkzLnjfWQLU3m6ce0f3lXrvg-aq2YF59v8")
         worksheet1 = sheet1.worksheet("queuelistlog")
+        
         df = pd.read_csv(csv_file_path)
         df = df.fillna("")
         worksheet1.clear()
         worksheet1.update([df.columns.values.tolist()] + df.values.tolist())
-        print(f"Arquivo enviado com sucesso para a aba 'PROD'.")
+        print(f"Arquivo enviado com sucesso para a planilha.")
         time.sleep(5)
     except Exception as e:
-        print(f"Erro durante o processo do Google Sheets: {e}")
+        print(f"Erro no processo do Google Sheets: {e}")
 
 async def main():    
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
     async with async_playwright() as p:
-        # ATENÇÃO: Headless MUDOU para True para funcionar no GitHub Actions
-        browser = await p.chromium.launch(headless=True, args=["--no-sandbox", "--disable-dev-shm-usage", "--window-size=1920,1080"])
-        context = await browser.new_context(accept_downloads=True)
+        # Launch com as flags necessárias para o ambiente do GitHub
+        browser = await p.chromium.launch(
+            headless=True, 
+            args=["--no-sandbox", "--disable-dev-shm-usage"]
+        )
+        context = await browser.new_context(accept_downloads=True, viewport={'width': 1920, 'height': 1080})
         page = await context.new_page()
+        
         try:
-            # LOGIN
+            # LOGIN NO SPX
+            print("Iniciando login no SPX...")
             await page.goto("https://spx.shopee.com.br/")
             await page.wait_for_selector('xpath=//*[@placeholder="Ops ID"]', timeout=15000)
             await page.locator('xpath=//*[@placeholder="Ops ID"]').fill('Ops127185')
@@ -75,59 +82,55 @@ async def main():
             await page.locator('xpath=/html/body/div[1]/div/div[2]/div/div/div[1]/div[3]/form/div/div/button').click()
             await page.wait_for_timeout(10000)
             
+            # Tentar fechar pop-ups
             try:
                 await page.locator('.ssc-dialog-close').click(timeout=5000)
             except:
-                print("Nenhum pop-up de aviso foi encontrado no login.")
                 await page.keyboard.press("Escape")
 
-            # NAVEGAÇÃO E DOWNLOAD
+            # NAVEGAÇÃO
+            print("Navegando para Queue List...")
             await page.goto("https://spx.shopee.com.br/#/queue-list")
             await page.wait_for_timeout(10000)
             await page.get_by_role("button", name="Log").click()
-            await page.wait_for_timeout(10000)
+            await page.wait_for_timeout(5000)
+            
+            # Clicar no botão de filtro/data
             await page.locator('xpath=/html/body/div[1]/div/div[2]/div[2]/div/div/div/div/div/div[2]/button/span').click()
-            await page.wait_for_timeout(10000)
+            await page.wait_for_timeout(5000)
             
             d3 = (datetime.now() - timedelta(days=3)).strftime("%Y/%m/%d")
             d1 = (datetime.now() + timedelta(days=1)).strftime("%Y/%m/%d")
 
-            # Primeiro campo de data
-            date_input_start = page.get_by_role("textbox", name="Data de início").nth(0)
-            await date_input_start.wait_for(state="visible", timeout=10000)
-            await date_input_start.click(force=True)
-            await date_input_start.fill(d3)
-
-            # Segundo campo de data
-            date_input_end = page.get_by_role("textbox", name="Data final").nth(0)
-            await date_input_end.wait_for(state="visible", timeout=10000)
-            await date_input_end.click(force=True)
-            await date_input_end.fill(d1)
-            await page.wait_for_timeout(5000)
+            # Preencher datas
+            await page.get_by_role("textbox", name="Data de início").nth(0).fill(d3)
+            await page.get_by_role("textbox", name="Data final").nth(0).fill(d1)
+            await page.wait_for_timeout(2000)
             
             await page.get_by_role('button', name='Confirmar').click()
-            await page.wait_for_timeout(5000)
+            await page.wait_for_timeout(3000)
             await page.get_by_role('button', name='Confirm').click()
             await page.wait_for_timeout(10000)
 
-            # Tirar um print de sucesso antes do download (para fins de log no GitHub Actions)
             await page.screenshot(path="sucesso_antes_download.png")
 
-            # Botão de download
+            # DOWNLOAD
+            print("Iniciando download...")
             async with page.expect_download() as download_info:
                 await page.get_by_role("button", name="Baixar").nth(0).click()
+            
             download = await download_info.value
             download_path = os.path.join(DOWNLOAD_DIR, download.suggested_filename)
             await download.save_as(download_path)
+            
             new_file_path = rename_downloaded_file(DOWNLOAD_DIR, download_path)
             
-            # Atualizar Google Sheets
             if new_file_path:
                 update_packing_google_sheets(new_file_path)
-                print("Dados atualizados com sucesso.")
+                print("Automação concluída com sucesso!")
+
         except Exception as e:
-            print(f"Erro durante o processo de automação web: {e}")
-            # Tira print caso dê erro
+            print(f"Erro na automação: {e}")
             await page.screenshot(path="erro_automacao.png")
         finally:
             await browser.close()
