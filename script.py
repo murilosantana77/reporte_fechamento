@@ -82,7 +82,7 @@ def main():
         # 4. TENTAR CLICAR EM "COPIAR"
         print("Procurando o botão 'Copiar' pelo XPath exato...")
         try:
-            xpath_copiar = "/html/body/div[10]/div/div[1]/div[1]/div[5]/div[2]/div[3]/button[1]"
+            xpath_copiar = "/html[1]/body[1]/div[10]/div[1]/div[1]/div[1]/div[5]/div[2]/div[3]/button[1]"
             btn_copiar = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_copiar)))
             
             try:
@@ -102,7 +102,7 @@ def main():
         # 5. TENTAR CLICAR EM "SEATALK"
         print("Procurando o botão 'SeaTalk' pelo XPath exato...")
         try:
-            xpath_seatalk = "/html/body/div[10]/div/div[1]/div[1]/div[5]/div[2]/div[3]/button[2]"
+            xpath_seatalk = "/html[1]/body[1]/div[10]/div[1]/div[1]/div[1]/div[5]/div[2]/div[3]/button[2]"
             btn_seatalk = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_seatalk)))
             
             try:
