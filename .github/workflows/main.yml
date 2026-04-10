@@ -1,15 +1,14 @@
 name: Automacao Reporte Shopee
 
 on:
-  workflow_dispatch: # Permite rodar manualmente clicando no botão no GitHub
+  workflow_dispatch: 
   # schedule:
-  #   - cron: '0 13 * * 1-5' # ATENÇÃO: O Cron do GitHub só lê UTC. 13:00 UTC = 10:00 Brasília (Seg a Sex).
+  #   - cron: '0 13 * * 1-5'
 
 jobs:
   executar-script:
     runs-on: ubuntu-latest
     
-    # Esta linha muda o "relógio" da máquina do GitHub Actions para Brasília
     env: 
       TZ: America/Sao_Paulo
 
@@ -22,20 +21,24 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Instalar bibliotecas (requirements.txt)
+    - name: Instalar bibliotecas
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Instalar Navegadores do Playwright
+      run: npx playwright install chromium --with-deps
+
     - name: Rodar o Script de Automação
       env:
-        # Puxa o segredo exato que você criou nas configurações do repositório
-        COOKIES_SESSAO: ${{ secrets.COOKIES_SESSAO }} 
+        # Puxa os segredos do GitHub para dentro do Python
+        COOKIES_SESSAO: ${{ secrets.COOKIES_SESSAO }}
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       run: python script.py
 
     - name: Salvar os Prints como Arquivo (Artefato)
       uses: actions/upload-artifact@v4
-      if: always() # Salva o print mesmo que o script dê erro
+      if: always() 
       with:
         name: prints-da-automacao
         path: "*.png"
