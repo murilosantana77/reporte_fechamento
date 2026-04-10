@@ -1,9 +1,9 @@
 name: Automacao Reporte Shopee
 
 on:
-  workflow_dispatch: # Permite que você clique em um botão "Run workflow" no GitHub para rodar manualmente
+  workflow_dispatch: # Permite rodar manualmente clicando no botão no GitHub
   # schedule:
-  #   - cron: '0 10 * * 1-5' # Opcional: Descomente para rodar sozinho.
+  #   - cron: '0 10 * * 1-5' # Opcional: Descomente para rodar de Seg a Sex (horário UTC)
 
 jobs:
   executar-script:
@@ -11,10 +11,10 @@ jobs:
 
     steps:
     - name: Baixar o código do repositório
-      uses: actions/checkout@v4 # Atualizado para v4
+      uses: actions/checkout@v4
 
     - name: Configurar o Python
-      uses: actions/setup-python@v5 # Atualizado para v5
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
@@ -25,12 +25,12 @@ jobs:
 
     - name: Rodar o Script de Automação
       env:
-        # É aqui que o GitHub Actions injeta o segredo para o Python ler
-        MEU_SEGREDO: ${{ secrets.MEU_SEGREDO }} 
+        # Puxa o segredo exato que você criou nas configurações do repositório
+        COOKIES_SESSAO: ${{ secrets.COOKIES_SESSAO }} 
       run: python script.py
 
     - name: Salvar os Prints como Arquivo (Artefato)
-      uses: actions/upload-artifact@v4 # Atualizado para v4
+      uses: actions/upload-artifact@v4
       if: always() # Salva o print mesmo que o script dê erro
       with:
         name: prints-da-automacao
