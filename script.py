@@ -67,30 +67,32 @@ def main():
         time.sleep(5)
 
         # 4. TENTAR CLICAR EM "COPIAR"
-        print("Procurando o botão 'Copiar'...")
+        print("Procurando o botão 'Copiar' pelo XPath exato...")
         try:
-            # Procura por QUALQUER tag que contenha o texto 'Copiar'
-            btn_copiar = wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(., 'Copiar')]")))
+            # Usando o XPath absoluto fornecido
+            xpath_copiar = "/html/body/div[10]/div/div[1]/div[1]/div[5]/div[2]/div[3]/button[1]"
+            btn_copiar = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_copiar)))
             
             try:
-                btn_copiar.click() # Tenta o clique normal
+                btn_copiar.click()
                 print("✅ Botão 'Copiar' clicado via Selenium.")
             except:
-                # Se algo bloquear, injeta um clique direto via JavaScript
                 driver.execute_script("arguments[0].click();", btn_copiar)
                 print("✅ Botão 'Copiar' clicado via JavaScript.")
                 
         except Exception as e:
             print("⚠️ Falha ao achar o Copiar.")
-            raise Exception(f"Botão Copiar não encontrado: {e}")
+            raise Exception(f"Botão Copiar não encontrado no XPath: {e}")
 
         print("Aguardando 10 segundos para a caixa do SeaTalk aparecer...")
         time.sleep(10)
 
         # 5. TENTAR CLICAR EM "SEATALK"
-        print("Procurando o botão 'SeaTalk'...")
+        print("Procurando o botão 'SeaTalk' pelo XPath exato...")
         try:
-            btn_seatalk = wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(., 'SeaTalk')]")))
+            # Usando o XPath absoluto fornecido
+            xpath_seatalk = "/html/body/div[10]/div/div[1]/div[1]/div[5]/div[2]/div[3]/button[2]"
+            btn_seatalk = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_seatalk)))
             
             try:
                 btn_seatalk.click()
@@ -101,7 +103,7 @@ def main():
                 
         except Exception as e:
             print("⚠️ Falha ao achar o SeaTalk.")
-            raise Exception(f"Botão SeaTalk não encontrado: {e}")
+            raise Exception(f"Botão SeaTalk não encontrado no XPath: {e}")
 
         print("Aguardando 5 segundos para envio da mensagem...")
         time.sleep(5)
