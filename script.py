@@ -8,7 +8,6 @@ import json
 import os
 
 def main():
-    # Configurações para rodar no GitHub Actions (Headless)
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
@@ -32,13 +31,10 @@ def main():
             for cookie in cookies_list:
                 if 'sameSite' in cookie:
                     del cookie['sameSite']
-                
-                # Tenta adicionar o cookie. Ignora se o domínio for incompatível.
                 try:
                     driver.add_cookie(cookie)
                 except:
                     pass
-                    
             print("✅ Tentativa de injeção de cookies finalizada.")
         else:
             print("⚠️ AVISO: O segredo COOKIES_SESSAO não foi encontrado ou está vazio!")
@@ -54,12 +50,10 @@ def main():
         # 3. MERGULHAR NO IFRAME DO APPS SCRIPT
         print("Procurando o iframe do painel...")
         try:
-            # Encontra o primeiro iframe da página e entra nele
             iframe_principal = wait.until(EC.presence_of_element_located((By.TAG_NAME, "iframe")))
             driver.switch_to.frame(iframe_principal)
             print("✅ Entrou no iframe principal.")
             
-            # O Apps Script frequentemente coloca o conteúdo real em um segundo iframe interno
             time.sleep(2)
             iframes_internos = driver.find_elements(By.TAG_NAME, "iframe")
             if len(iframes_internos) > 0:
@@ -68,15 +62,27 @@ def main():
         except Exception as e:
             print("⚠️ Não achou iframe, vai tentar na página principal mesmo.")
         
+        # Aguarda os dados do dashboard renderizarem
+        print("Aguardando 5 segundos para o dashboard interno carregar...")
+        time.sleep(5)
+
         # 4. TENTAR CLICAR EM "COPIAR"
         print("Procurando o botão 'Copiar'...")
         try:
-            btn_copiar = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'Copiar')]")))
-            btn_copiar.click()
-            print("✅ Botão 'Copiar' clicado com sucesso.")
-        except:
-            print("⚠️ Falha ao clicar no Copiar.")
-            raise Exception("Botão Copiar não encontrado dentro do iframe.")
+            # Procura por QUALQUER tag que contenha o texto 'Copiar'
+            btn_copiar = wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(., 'Copiar')]")))
+            
+            try:
+                btn_copiar.click() # Tenta o clique normal
+                print("✅ Botão 'Copiar' clicado via Selenium.")
+            except:
+                # Se algo bloquear, injeta um clique direto via JavaScript
+                driver.execute_script("arguments[0].click();", btn_copiar)
+                print("✅ Botão 'Copiar' clicado via JavaScript.")
+                
+        except Exception as e:
+            print("⚠️ Falha ao achar o Copiar.")
+            raise Exception(f"Botão Copiar não encontrado: {e}")
 
         print("Aguardando 10 segundos para a caixa do SeaTalk aparecer...")
         time.sleep(10)
@@ -84,17 +90,22 @@ def main():
         # 5. TENTAR CLICAR EM "SEATALK"
         print("Procurando o botão 'SeaTalk'...")
         try:
-            btn_seatalk = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'SeaTalk')]")))
-            btn_seatalk.click()
-            print("✅ Botão 'SeaTalk' clicado com sucesso.")
-        except:
-            print("⚠️ Falha ao clicar no SeaTalk.")
-            raise Exception("Botão SeaTalk não encontrado na tela.")
+            btn_seatalk = wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(., 'SeaTalk')]")))
+            
+            try:
+                btn_seatalk.click()
+                print("✅ Botão 'SeaTalk' clicado via Selenium.")
+            except:
+                driver.execute_script("arguments[0].click();", btn_seatalk)
+                print("✅ Botão 'SeaTalk' clicado via JavaScript.")
+                
+        except Exception as e:
+            print("⚠️ Falha ao achar o SeaTalk.")
+            raise Exception(f"Botão SeaTalk não encontrado: {e}")
 
         print("Aguardando 5 segundos para envio da mensagem...")
         time.sleep(5)
         
-        # Tirar print de confirmação
         driver.save_screenshot("sucesso_print.png")
         print("📸 Print final salvo com sucesso.")
 
