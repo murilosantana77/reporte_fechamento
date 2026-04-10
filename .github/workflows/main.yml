@@ -1,9 +1,7 @@
 name: Automacao Reporte Shopee
 
 on:
-  workflow_dispatch: # Permite rodar manualmente clicando no botão no GitHub
-  # schedule:
-  #    - cron: '0 10 * * 1-5' # Opcional: Descomente para rodar de Seg a Sex (horário UTC)
+  workflow_dispatch:
 
 jobs:
   executar-script:
