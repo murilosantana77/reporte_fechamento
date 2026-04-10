@@ -50,8 +50,8 @@ def main():
         url = "https://script.google.com/a/macros/shopee.com/s/AKfycby9ezG_TJrxTuCrEzXiIzs1Nc0ePz-TW-0JgfFXhrg/dev"
         driver.get(url)
         
-        print("Aguardando 10 segundos para a página carregar...")
-        time.sleep(10) 
+        print("Aguardando 40 segundos para a página carregar...")
+        time.sleep(40) 
 
         # 3. MERGULHAR NO IFRAME DO APPS SCRIPT
         print("Procurando o iframe do painel...")
