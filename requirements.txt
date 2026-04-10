@@ -1,1 +1,4 @@
-selenium>=4.15.0
+playwright
+gspread
+pandas
+oauth2client
