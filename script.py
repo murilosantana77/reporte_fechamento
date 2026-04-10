@@ -9,10 +9,16 @@ import os
 
 def main():
     options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
+    
+    # =====================================================================
+    # AS MUDANÇAS ESTÃO AQUI: Configurações anti-bloqueio e novo motor Headless
+    # =====================================================================
+    options.add_argument('--headless=new') # Usa o novo motor de renderização (idêntico ao Chrome real)
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--window-size=1920,1080') 
+    options.add_argument('--window-size=1920,1080')
+    options.add_argument('--disable-blink-features=AutomationControlled') # Esconde que é o Selenium
+    options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36') # Finge ser um PC normal
     
     driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 20) 
@@ -62,9 +68,7 @@ def main():
         except Exception as e:
             print("⚠️ Não achou iframe, vai tentar na página principal mesmo.")
         
-        # =====================================================================
-        # A MUDANÇA ESTÁ AQUI: Tempo estendido para os gráficos renderizarem
-        # =====================================================================
+        # Mantemos o tempo alto para dar tempo do Apps Script rodar tudo no novo motor
         print("Aguardando 35 segundos para o dashboard puxar os KPIs da planilha e desenhar os gráficos...")
         time.sleep(35) 
 
