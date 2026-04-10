@@ -3,11 +3,15 @@ name: Automacao Reporte Shopee
 on:
   workflow_dispatch: # Permite rodar manualmente clicando no botão no GitHub
   # schedule:
-  #   - cron: '0 10 * * 1-5' # Opcional: Descomente para rodar de Seg a Sex (horário UTC)
+  #   - cron: '0 13 * * 1-5' # ATENÇÃO: O Cron do GitHub só lê UTC. 13:00 UTC = 10:00 Brasília (Seg a Sex).
 
 jobs:
   executar-script:
     runs-on: ubuntu-latest
+    
+    # Esta linha muda o "relógio" da máquina do GitHub Actions para Brasília
+    env: 
+      TZ: America/Sao_Paulo
 
     steps:
     - name: Baixar o código do repositório
@@ -23,14 +27,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Instalar navegadores do Playwright
-      run: |
-        python -m playwright install chromium
-
     - name: Rodar o Script de Automação
       env:
-        # Puxa o secret com o conteúdo do JSON de credenciais do Google Sheets
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }} 
+        # Puxa o segredo exato que você criou nas configurações do repositório
         COOKIES_SESSAO: ${{ secrets.COOKIES_SESSAO }} 
       run: python script.py
 
